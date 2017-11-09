@@ -1,0 +1,5 @@
+<launch>
+  <arg name="rvizconfig" default="$(find using_markers)/config/rviz_config.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  <node name="basic_shapes" pkg="using_markers" type="basic_shapes" required="true" />
+</launch>
