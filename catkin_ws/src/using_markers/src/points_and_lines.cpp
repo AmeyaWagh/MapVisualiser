@@ -128,13 +128,13 @@ int main( int argc, char** argv )
       range_msg.range = k/100.0;
       k = k+1.0;
       printf("value %f\n",k/100.0);
+      sensor_pub.publish(range_msg);
     }
 // %EndTag(HELIX)%
 
     marker_pub.publish(points);
     marker_pub.publish(line_strip);
     marker_pub.publish(line_list);
-    sensor_pub.publish(range_msg);
 
     r.sleep();
 
