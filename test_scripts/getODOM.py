@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 import datetime
 import traceback
 import math
+import random
 
 class RobotOdometry():
-    def __init__(self,radius=1.27,lengthBetweenTwoWheels=10,encoderResolution=720,sensordist=[5,5,5,5,5]):
+    def __init__(self,radius=1.27,lengthBetweenTwoWheels=10,encoderResolution=720,sensordist=[1,1,1,1,1]):
         self.lengthBetweenTwoWheels=lengthBetweenTwoWheels #cm
         self.radius = radius #cm
         self.encoderResolution = encoderResolution
@@ -37,6 +38,7 @@ class RobotOdometry():
         
         self.currTime=datetime.datetime.now()
         self.plt=plt
+        self.plt.axis([-100,100,-100,100])
         self.plt.show(block=True)
 
     def getTimeDelta(self):
@@ -46,7 +48,7 @@ class RobotOdometry():
         self.currTime = newtime
         return float(timeDelta)
 
-    def getODOM(self,lm,rm):
+    def getODOM(self,lm,rm,sensorData=[0,0,0,0,0]):
         self.deltaL = lm-self.prevLtick 
         self.deltaR = rm-self.prevRtick 
 
@@ -73,21 +75,24 @@ class RobotOdometry():
         self.th += self.delta_th;
 
 
+        # update sensor with readings
+        sensorData = map(lambda x,y:x+y,self.sensordist,sensorData)
+
         # sensor positions
-        self.sensor0_x = self.sensordist[0]*math.cos(self.th)+self.x
-        self.sensor0_y = self.sensordist[0]*math.sin(self.th)+self.y
+        self.sensor0_x = sensorData[0]*math.cos(self.th)+self.x
+        self.sensor0_y = sensorData[0]*math.sin(self.th)+self.y
 
-        self.sensor1_x = self.sensordist[1]*math.cos(self.th+math.pi/2.0)+self.x
-        self.sensor1_y = self.sensordist[1]*math.sin(self.th+math.pi/2.0)+self.y
+        self.sensor1_x = sensorData[1]*math.cos(self.th+math.pi/2.0)+self.x
+        self.sensor1_y = sensorData[1]*math.sin(self.th+math.pi/2.0)+self.y
 
-        self.sensor2_x = self.sensordist[2]*math.cos(self.th-math.pi/2.0)+self.x
-        self.sensor2_y = self.sensordist[2]*math.sin(self.th-math.pi/2.0)+self.y
+        self.sensor2_x = sensorData[2]*math.cos(self.th-math.pi/2.0)+self.x
+        self.sensor2_y = sensorData[2]*math.sin(self.th-math.pi/2.0)+self.y
 
-        self.sensor3_x = self.sensordist[3]*math.cos(self.th+math.pi/4.0)+self.x
-        self.sensor3_y = self.sensordist[3]*math.sin(self.th+math.pi/4.0)+self.y
+        self.sensor3_x = sensorData[3]*math.cos(self.th+math.pi/4.0)+self.x
+        self.sensor3_y = sensorData[3]*math.sin(self.th+math.pi/4.0)+self.y
 
-        self.sensor4_x = self.sensordist[4]*math.cos(self.th-math.pi/4.0)+self.x
-        self.sensor4_y = self.sensordist[4]*math.sin(self.th-math.pi/4.0)+self.y
+        self.sensor4_x = sensorData[4]*math.cos(self.th-math.pi/4.0)+self.x
+        self.sensor4_y = sensorData[4]*math.sin(self.th-math.pi/4.0)+self.y
 
         return (self.x,self.y,self.th)
 
@@ -100,7 +105,7 @@ class RobotOdometry():
         plt.plot(self.sensor3_x,self.sensor3_y,'y.')
         plt.plot(self.sensor4_x,self.sensor4_y,'y.')
         plt.draw()
-        # plt.pause(0.5)
+        # plt.pause(0.01)
 
 if __name__ == '__main__':
     try:
@@ -115,14 +120,23 @@ if __name__ == '__main__':
         for i in range(714):
             lm=1
             rm=1
-            robot.getODOM(lm,rm)
+            robot.getODOM(lm,rm,sensorData=[random.uniform(0,1),
+                random.uniform(0,1),
+                random.uniform(0,1),
+                random.uniform(0,1),
+                random.uniform(0,1)])
             robot.printPos()
             print(lm,rm)
         robot.plt.show() 
         for i in range(714):
             lm=0
             rm=1
-            robot.getODOM(lm,rm)
+            # robot.getODOM(lm,rm)
+            robot.getODOM(lm,rm,sensorData=[random.uniform(0,1),
+                random.uniform(0,1),
+                random.uniform(0,1),
+                random.uniform(0,1),
+                random.uniform(0,1)])
             robot.printPos()
             print(lm,rm)
         robot.plt.show()    
