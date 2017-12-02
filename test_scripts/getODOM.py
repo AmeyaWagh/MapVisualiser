@@ -4,106 +4,128 @@ import traceback
 import math
 import random
 
+
+class Sensor():
+    '''
+        Models the behaviour of the sensor and calculates the x,y 
+        co-ordinates of the obstacle w.r.t the centroid of the 
+        robot it is attached to.
+    '''
+
+    def __init__(self, distFromCenter=0,
+                 angleFromHeading=0,
+                 minVal=0,
+                 maxVal=10.0,
+                 origin=[0, 0]):
+
+        self.distFromCenter = distFromCenter
+        self.angleFromHeading = angleFromHeading
+        self.minVal = minVal
+        self.maxVal = maxVal
+
+        # defining the initial position of the sensor w.r.t origin frame
+        self.sensor_x = self.distFromCenter * \
+            math.cos(self.angleFromHeading)+origin[0]
+        self.sensor_y = self.distFromCenter * \
+            math.sin(self.angleFromHeading)+origin[1]
+
+    def getReading(self, val, x, y, theta):
+        # returns the (x,y) co-ordinates of the point which the sensor 
+        # detected w.r.t (x,y,theta) frame provided
+
+        if (val >= self.minVal) and (val < self.maxVal):
+            self.sensor_x = (self.distFromCenter+val) * \
+                math.cos(theta+self.angleFromHeading)+x
+            self.sensor_y = (self.distFromCenter+val) * \
+                math.sin(theta+self.angleFromHeading)+y
+            return (self.sensor_x, self.sensor_y)
+        else:
+            return (None, None)
+
+
 class RobotOdometry():
-    def __init__(self,radius=1.27,lengthBetweenTwoWheels=10,encoderResolution=720,sensordist=[1,1,1,1,1]):
-        self.lengthBetweenTwoWheels=lengthBetweenTwoWheels #cm
-        self.radius = radius #cm
+    '''
+        This class describes the odometry of the robot
+        It returns the point cloud of the sensors connected to it
+    '''
+
+    def __init__(self, radius=1.27,
+                 lengthBetweenTwoWheels=10,
+                 encoderResolution=720,
+                 mapSize=(1000, 1000),
+                 # distances of each sensor from the centroid of the robot
+                 # sensor distance in order front, Left, Right, Left_45, Right_45 in cm
+                 sensordist=[1, 1, 1, 1, 1],
+                 # angular offset of each sensor from the heading 
+                 sensorAngle=[0,                    # front sensor
+                              math.pi/2,            # Left sensor
+                              -1*math.pi/2,         # Right sensor
+                              math.pi/4,            # Left_45 sensor 
+                              -1*math.pi/4]):       # Right_45 sensor
+
+        self.lengthBetweenTwoWheels = lengthBetweenTwoWheels  # cm
+        self.radius = radius  # cm
         self.encoderResolution = encoderResolution
-        self.distPerCount= (2*math.pi*self.radius)/self.encoderResolution #cm
-        self.prevLtick=0 
-        self.prevRtick=0
+        self.distPerCount = (2*math.pi*self.radius) / \
+            self.encoderResolution  # cm
+        self.prevLtick = 0
+        self.prevRtick = 0
         self.sensordist = sensordist
-        
-        self.x=0
-        self.y=0
-        self.th=0
 
-        # front sensor
-        self.sensor0_x=self.sensordist[0]*math.cos(0)+self.x
-        self.sensor0_y=self.sensordist[0]*math.sin(0)+self.y
+        self.x = 0
+        self.y = 0
+        self.th = 0
 
-        # extreme right sensor
-        self.sensor1_x=self.sensordist[1]*math.cos(math.pi/2.0)+self.x
-        self.sensor1_y=self.sensordist[1]*math.sin(math.pi/2.0)+self.y
+        # sensor instances in order front, Left, Right, Left_45, Right_45
+        self.sensors = [Sensor(sensordist[i], sensorAngle[i], 0.3, 40.0, [
+                               0, 0]) for i in range(len(sensordist))]
 
-        # extreme left sensor
-        self.sensor2_x=self.sensordist[2]*math.cos(-1*math.pi/2.0)+self.x
-        self.sensor2_y=self.sensordist[2]*math.sin(-1*math.pi/2.0)+self.y
-        
-        self.sensor3_x=self.sensordist[3]*math.cos(math.pi/4.0)+self.x
-        self.sensor3_y=self.sensordist[3]*math.sin(math.pi/4.0)+self.y
-        
-        self.sensor4_x=self.sensordist[4]*math.cos(-1*math.pi/4.0)+self.x
-        self.sensor4_y=self.sensordist[4]*math.sin(-1*math.pi/4.0)+self.y
-        
-        self.currTime=datetime.datetime.now()
-        self.plt=plt
-        self.plt.axis([-100,100,-100,100])
+        self.plt = plt
         self.plt.show(block=True)
+        # self.plt.axis([-1*mapSize[0]/2, mapSize[0] /
+        #                2, -1*mapSize[0]/2, mapSize[0]/2])
 
-    def getTimeDelta(self):
-        newtime = datetime.datetime.now()
-        timeDelta = (newtime-self.currTime).microseconds/1000000.0
-        print("deltatime:",timeDelta)
-        self.currTime = newtime
-        return float(timeDelta)
+    def getODOM(self, lm, rm, sensorData=[0, 0, 0, 0, 0]):
+        self.deltaL = lm-self.prevLtick
+        self.deltaR = rm-self.prevRtick
 
-    def getODOM(self,lm,rm,sensorData=[0,0,0,0,0]):
-        self.deltaL = lm-self.prevLtick 
-        self.deltaR = rm-self.prevRtick 
-
-        # self.dt = self.getTimeDelta();
-        self.dt = 1;
+        self.dt = 1
         self.omega_left = (self.deltaL * self.distPerCount) / self.dt
         self.omega_right = (self.deltaR * self.distPerCount) / self.dt
 
-        # self.v_left = self.omega_left * self.radius
-        # self.v_right = self.omega_right * self.radius
-        self.v_left = self.omega_left 
-        self.v_right = self.omega_right 
+        self.v_left = self.omega_left
+        self.v_right = self.omega_right
 
         self.vx = ((self.v_right + self.v_left) / 2)
         self.vy = 0
         self.vth = ((self.v_right - self.v_left)/self.lengthBetweenTwoWheels)
 
-        self.delta_x = (self.vx * math.cos(self.th)) * self.dt;
-        self.delta_y = (self.vx * math.sin(self.th)) * self.dt;
-        self.delta_th = self.vth * self.dt;
+        self.delta_x = (self.vx * math.cos(self.th)) * self.dt
+        self.delta_y = (self.vx * math.sin(self.th)) * self.dt
+        self.delta_th = self.vth * self.dt
 
-        self.x += self.delta_x;
-        self.y += self.delta_y;
-        self.th += self.delta_th;
-
+        self.x += self.delta_x
+        self.y += self.delta_y
+        self.th += self.delta_th
 
         # update sensor with readings
-        sensorData = map(lambda x,y:x+y,self.sensordist,sensorData)
+        sensorData = map(lambda x, y: x+y, self.sensordist, sensorData)
 
-        # sensor positions
-        self.sensor0_x = sensorData[0]*math.cos(self.th)+self.x
-        self.sensor0_y = sensorData[0]*math.sin(self.th)+self.y
+        # sensor reading is a tuple of (x,y)
+        self.sensor_readings = [
+            sensor.getReading(sensorData[idx], self.x, self.y, self.th)
+            for idx, sensor in enumerate(self.sensors)]
 
-        self.sensor1_x = sensorData[1]*math.cos(self.th+math.pi/2.0)+self.x
-        self.sensor1_y = sensorData[1]*math.sin(self.th+math.pi/2.0)+self.y
-
-        self.sensor2_x = sensorData[2]*math.cos(self.th-math.pi/2.0)+self.x
-        self.sensor2_y = sensorData[2]*math.sin(self.th-math.pi/2.0)+self.y
-
-        self.sensor3_x = sensorData[3]*math.cos(self.th+math.pi/4.0)+self.x
-        self.sensor3_y = sensorData[3]*math.sin(self.th+math.pi/4.0)+self.y
-
-        self.sensor4_x = sensorData[4]*math.cos(self.th-math.pi/4.0)+self.x
-        self.sensor4_y = sensorData[4]*math.sin(self.th-math.pi/4.0)+self.y
-
-        return (self.x,self.y,self.th)
+        return {"frame":(self.x, self.y, self.th),"sensorValues":self.sensor_readings}
 
     def printPos(self):
-        print("I am at ({},{}) facing {}".format(self.x,self.y,(self.th*180/math.pi)))
-        plt.plot(self.x,self.y,'r.')
-        plt.plot(self.sensor0_x,self.sensor0_y,'g.')
-        plt.plot(self.sensor1_x,self.sensor1_y,'b.')
-        plt.plot(self.sensor2_x,self.sensor2_y,'b.')
-        plt.plot(self.sensor3_x,self.sensor3_y,'y.')
-        plt.plot(self.sensor4_x,self.sensor4_y,'y.')
+        # print("I am at ({},{}) facing {}".format(self.x,self.y,(self.th*180/math.pi)))
+        self.markers = ['g.', 'b.', 'b.', 'y.', 'y.']
+        plt.plot(self.x, self.y, 'r.')
+
+        for idx, reading in enumerate(self.sensor_readings):
+            plt.plot(reading[0], reading[1], self.markers[idx])
+
         plt.draw()
         # plt.pause(0.01)
 
@@ -118,35 +140,56 @@ if __name__ == '__main__':
         #     print(lm,rm)
         # for j in range(2):
         for i in range(714):
-            lm=1
-            rm=1
-            robot.getODOM(lm,rm,sensorData=[random.uniform(0,1),
-                random.uniform(0,1),
-                random.uniform(0,1),
-                random.uniform(0,1),
-                random.uniform(0,1)])
+            lm = 1
+            rm = 1
+            robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
             robot.printPos()
-            print(lm,rm)
-        robot.plt.show() 
+            # print(lm,rm)
+        # robot.plt.show()
         for i in range(714):
-            lm=0
-            rm=1
+            lm = 0
+            rm = 1
             # robot.getODOM(lm,rm)
-            robot.getODOM(lm,rm,sensorData=[random.uniform(0,1),
-                random.uniform(0,1),
-                random.uniform(0,1),
-                random.uniform(0,1),
-                random.uniform(0,1)])
+            robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
             robot.printPos()
-            print(lm,rm)
-        robot.plt.show()    
+            # print(lm,rm)
+        # for i in range(714):
+        #     lm = 1
+        #     rm = 1
+        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1)])
+        #     robot.printPos()
+        #     # print(lm,rm)
+        # for i in range(714):
+        #     lm = 1
+        #     rm = 0
+        #     # robot.getODOM(lm,rm)
+        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1)])
+        #     robot.printPos()
+            # print(lm,rm)
+        robot.plt.show()
         # for i in range(714):
         #     lm=0
         #     rm=-1
         #     robot.getODOM(lm,rm)
         #     robot.printPos()
         #     print(lm,rm)
-        # robot.plt.show()    
+        # robot.plt.show()
     except Exception as e:
         traceback.print_exc()
         quit()
