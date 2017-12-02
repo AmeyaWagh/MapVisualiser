@@ -1,5 +1,18 @@
 <launch>
   <arg name="rvizconfig" default="$(find using_markers)/config/rviz_config.rviz" />
+  
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
   <node name="points_and_lines" pkg="using_markers" type="points_and_lines" required="true" />
+  
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  
+  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="1 0 0 0 0 0 1 link1_parent link1" /> -->
+
+
+  <arg name="model" default="$(find using_markers)/urdf/myrobot.urdf"/>
+  <arg name="gui" default="true" />
+
+  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  <param name="use_gui" value="$(arg gui)"/>
 </launch>
