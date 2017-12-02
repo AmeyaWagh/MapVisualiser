@@ -40,10 +40,18 @@ int main( int argc, char** argv )
   ros::init(argc, argv, "points_and_lines");
   ros::NodeHandle n;
   // ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 10);
-  ros::Publisher sensor_pub = n.advertise<sensor_msgs::Range>("sensor_range", 10);
-  ros::Rate r(30);
+  ros::Publisher sensor_pub1 = n.advertise<sensor_msgs::Range>("sensor_range1", 10);
+  ros::Publisher sensor_pub2 = n.advertise<sensor_msgs::Range>("sensor_range2", 10);
+  ros::Publisher sensor_pub3 = n.advertise<sensor_msgs::Range>("sensor_range3", 10);
+  ros::Publisher sensor_pub4 = n.advertise<sensor_msgs::Range>("sensor_range4", 10);
+  ros::Publisher sensor_pub5 = n.advertise<sensor_msgs::Range>("sensor_range5", 10);
+  ros::Rate r(0.5);
   
-  sensor_msgs::Range range_msg;
+  sensor_msgs::Range range_msg1;
+  sensor_msgs::Range range_msg2;
+  sensor_msgs::Range range_msg3;
+  sensor_msgs::Range range_msg4;
+  sensor_msgs::Range range_msg5;
   
   
 
@@ -59,12 +67,40 @@ int main( int argc, char** argv )
     // points.pose.orientation.w = line_strip.pose.orientation.w = line_list.pose.orientation.w = 1.0;
 // %EndTag(MARKER_INIT)%
 
-    range_msg.radiation_type = sensor_msgs::Range::INFRARED;
-    range_msg.header.frame_id =  "/my_frame";
-    range_msg.field_of_view = 0.01;
-    range_msg.min_range = 0.03;  // For GP2D120XJ00F only. Adjust for other IR rangers
-    range_msg.max_range = 0.4;   // For GP2D120XJ00F only. Adjust for other IR rangers
-    range_msg.header.stamp = ros::Time::now();
+    range_msg1.radiation_type = sensor_msgs::Range::INFRARED;
+    range_msg1.header.frame_id =  "/my_frame1";
+    range_msg1.field_of_view = 0.01;
+    range_msg1.min_range = 0.03;  // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg1.max_range = 0.4;   // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg1.header.stamp = ros::Time::now();
+
+    range_msg2.radiation_type = sensor_msgs::Range::INFRARED;
+    range_msg2.header.frame_id =  "/my_frame2";
+    range_msg2.field_of_view = 0.01;
+    range_msg2.min_range = 0.03;  // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg2.max_range = 0.4;   // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg2.header.stamp = ros::Time::now();
+
+    range_msg3.radiation_type = sensor_msgs::Range::INFRARED;
+    range_msg3.header.frame_id =  "/my_frame3";
+    range_msg3.field_of_view = 0.01;
+    range_msg3.min_range = 0.03;  // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg3.max_range = 0.4;   // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg3.header.stamp = ros::Time::now();
+
+    range_msg4.radiation_type = sensor_msgs::Range::INFRARED;
+    range_msg4.header.frame_id =  "/my_fram4";
+    range_msg4.field_of_view = 0.01;
+    range_msg4.min_range = 0.03;  // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg4.max_range = 0.4;   // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg4.header.stamp = ros::Time::now();
+
+    range_msg5.radiation_type = sensor_msgs::Range::INFRARED;
+    range_msg5.header.frame_id =  "/my_fram5";
+    range_msg5.field_of_view = 0.01;
+    range_msg5.min_range = 0.03;  // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg5.max_range = 0.4;   // For GP2D120XJ00F only. Adjust for other IR rangers
+    range_msg5.header.stamp = ros::Time::now();
 // %Tag(ID)%
 //     points.id = 0;
 //     line_strip.id = 1;
@@ -125,10 +161,19 @@ int main( int argc, char** argv )
       {
         k=3.0;
       }
-      range_msg.range = k/100.0;
+      range_msg1.range = k/100.0;
+      range_msg2.range = k/100.0;
+      range_msg3.range = k/100.0;
+      range_msg4.range = k/100.0;
+      range_msg5.range = k/100.0;
       k = k+1.0;
       // printf("value %f\n",k/100.0);
-      sensor_pub.publish(range_msg);
+      sensor_pub1.publish(range_msg1);
+      sensor_pub2.publish(range_msg2);
+      sensor_pub3.publish(range_msg3);
+      sensor_pub4.publish(range_msg4);
+      sensor_pub5.publish(range_msg5);
+      r.sleep();
     }
 // %EndTag(HELIX)%
 
@@ -136,7 +181,6 @@ int main( int argc, char** argv )
     // marker_pub.publish(line_strip);
     // marker_pub.publish(line_list);
 
-    r.sleep();
 
     f += 0.04;
   }

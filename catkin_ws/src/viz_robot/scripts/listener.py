@@ -39,11 +39,87 @@
 import rospy
 # from std_msgs.msg import String
 from sensor_msgs.msg import Range
-# import sensor_msgs as sn
-# print(dir(sn.msg))
+import matplotlib.pyplot as plt
+import datetime
 
-def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard {}'.format(data.range))
+data_len=50
+refreshRate = 5
+global starttime
+starttime = datetime.datetime.now()
+
+global sensor1_arr
+sensor1_arr = [0]
+
+global sensor2_arr
+sensor2_arr = [0]
+
+global sensor3_arr
+sensor3_arr = [0]
+
+global sensor4_arr
+sensor4_arr = [0]
+
+global sensor5_arr
+sensor5_arr = [0]
+
+
+def callback1(data):
+    rospy.loginfo(rospy.get_caller_id() + 'sensor 1 {}'.format(data.range))
+    global sensor1_arr
+    sensor1_arr.append(data.range)
+    sensor1_arr = buffResize(sensor1_arr)
+    plotter()
+
+
+def callback2(data):
+    rospy.loginfo(rospy.get_caller_id() + 'sensor 2 {}'.format(data.range))
+    global sensor2_arr
+    sensor2_arr.append(data.range)
+    sensor2_arr = buffResize(sensor2_arr)
+    plotter()
+
+def callback3(data):
+    rospy.loginfo(rospy.get_caller_id() + 'sensor 3 {}'.format(data.range))
+    global sensor3_arr
+    sensor3_arr.append(data.range)
+    sensor3_arr = buffResize(sensor3_arr)
+    plotter()
+
+def callback4(data):
+    rospy.loginfo(rospy.get_caller_id() + 'sensor 4 {}'.format(data.range))
+    global sensor4_arr
+    sensor4_arr.append(data.range)
+    sensor4_arr = buffResize(sensor4_arr)
+    plotter()
+
+def callback5(data):
+    rospy.loginfo(rospy.get_caller_id() + 'sensor 5 {}'.format(data.range))
+    global sensor5_arr
+    sensor5_arr.append(data.range)
+    sensor5_arr = buffResize(sensor5_arr)
+    plotter()
+
+
+
+def buffResize(sensor_arr):
+    while len(sensor_arr)>data_len:
+        sensor_arr.pop(0)
+    return sensor_arr    
+
+
+def plotter():
+    pass
+    # global starttime
+    # if (datetime.datetime.now()-starttime).seconds > refreshRate:
+    #     plt.close()
+    #     plt.plot(sensor1_arr)
+    #     plt.plot(sensor2_arr)
+    #     plt.plot(sensor3_arr)
+    #     plt.plot(sensor4_arr)
+    #     plt.plot(sensor5_arr)
+            
+    #     plt.show()
+    #     starttime = datetime.datetime.now()
 
 def listener():
 
@@ -54,10 +130,15 @@ def listener():
     # run simultaneously.
     rospy.init_node('listener', anonymous=True)
 
-    rospy.Subscriber('sensor_range', Range, callback)
+    rospy.Subscriber('sensor_range1', Range, callback1)
+    rospy.Subscriber('sensor_range2', Range, callback2)
+    rospy.Subscriber('sensor_range3', Range, callback3)
+    rospy.Subscriber('sensor_range4', Range, callback4)
+    rospy.Subscriber('sensor_range5', Range, callback5)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
 if __name__ == '__main__':
+    
     listener()
