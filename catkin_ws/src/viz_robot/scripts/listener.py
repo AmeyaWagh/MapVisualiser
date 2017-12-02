@@ -37,10 +37,13 @@
 ## to the 'chatter' topic
 
 import rospy
-from std_msgs.msg import String
+# from std_msgs.msg import String
+from sensor_msgs.msg import Range
+# import sensor_msgs as sn
+# print(dir(sn.msg))
 
 def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard %s', data.data)
+    rospy.loginfo(rospy.get_caller_id() + 'I heard {}'.format(data.range))
 
 def listener():
 
@@ -51,7 +54,7 @@ def listener():
     # run simultaneously.
     rospy.init_node('listener', anonymous=True)
 
-    rospy.Subscriber('chatter', String, callback)
+    rospy.Subscriber('sensor_range', Range, callback)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

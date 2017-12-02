@@ -127,7 +127,7 @@ int main( int argc, char** argv )
       }
       range_msg.range = k/100.0;
       k = k+1.0;
-      printf("value %f\n",k/100.0);
+      // printf("value %f\n",k/100.0);
       sensor_pub.publish(range_msg);
     }
 // %EndTag(HELIX)%
