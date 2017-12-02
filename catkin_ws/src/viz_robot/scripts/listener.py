@@ -41,6 +41,9 @@ import rospy
 from sensor_msgs.msg import Range
 import matplotlib.pyplot as plt
 import datetime
+from threading import Thread
+import traceback
+import time
 
 data_len=50
 refreshRate = 5
@@ -62,13 +65,14 @@ sensor4_arr = [0]
 global sensor5_arr
 sensor5_arr = [0]
 
+plt.show(block=True)
 
 def callback1(data):
     rospy.loginfo(rospy.get_caller_id() + 'sensor 1 {}'.format(data.range))
     global sensor1_arr
     sensor1_arr.append(data.range)
     sensor1_arr = buffResize(sensor1_arr)
-    plotter()
+    # plotter()
 
 
 def callback2(data):
@@ -76,28 +80,28 @@ def callback2(data):
     global sensor2_arr
     sensor2_arr.append(data.range)
     sensor2_arr = buffResize(sensor2_arr)
-    plotter()
+    # plotter()
 
 def callback3(data):
     rospy.loginfo(rospy.get_caller_id() + 'sensor 3 {}'.format(data.range))
     global sensor3_arr
     sensor3_arr.append(data.range)
     sensor3_arr = buffResize(sensor3_arr)
-    plotter()
+    # plotter()
 
 def callback4(data):
     rospy.loginfo(rospy.get_caller_id() + 'sensor 4 {}'.format(data.range))
     global sensor4_arr
     sensor4_arr.append(data.range)
     sensor4_arr = buffResize(sensor4_arr)
-    plotter()
+    # plotter()
 
 def callback5(data):
     rospy.loginfo(rospy.get_caller_id() + 'sensor 5 {}'.format(data.range))
     global sensor5_arr
     sensor5_arr.append(data.range)
     sensor5_arr = buffResize(sensor5_arr)
-    plotter()
+    # plotter()
 
 
 
@@ -107,19 +111,32 @@ def buffResize(sensor_arr):
     return sensor_arr    
 
 
-def plotter():
+def getODOM():
     pass
-    # global starttime
-    # if (datetime.datetime.now()-starttime).seconds > refreshRate:
-    #     plt.close()
-    #     plt.plot(sensor1_arr)
-    #     plt.plot(sensor2_arr)
-    #     plt.plot(sensor3_arr)
-    #     plt.plot(sensor4_arr)
-    #     plt.plot(sensor5_arr)
-            
-    #     plt.show()
-    #     starttime = datetime.datetime.now()
+
+
+def plotter():
+    # pass
+    global starttime
+    while True:
+        print("plotting data")
+        # if (datetime.datetime.now()-starttime).seconds > refreshRate:
+        plt.plot(sensor1_arr,'.')
+        plt.plot(sensor2_arr,'.')
+        plt.plot(sensor3_arr,'.')
+        plt.plot(sensor4_arr,'.')
+        plt.plot(sensor5_arr,'.')
+        # plt.gcf.clear(,)    
+        plt.draw()
+        plt.pause(0.5)
+        # plt.show()
+        # plt.clf()
+        # plt.cla()
+        # plt.close()
+        starttime = datetime.datetime.now()
+        print("done plotting")
+        print("wait for it") 
+        # time.sleep(5)   
 
 def listener():
 
@@ -140,5 +157,13 @@ def listener():
     rospy.spin()
 
 if __name__ == '__main__':
-    
-    listener()
+    try:
+        t = Thread(target=plotter)
+        t.start()
+        listener()
+    except KeyboardInterrupt:
+        # traceback.print_exc()
+        t.stop()
+        print('bye')
+        quit()
+

@@ -45,7 +45,7 @@ int main( int argc, char** argv )
   ros::Publisher sensor_pub3 = n.advertise<sensor_msgs::Range>("sensor_range3", 10);
   ros::Publisher sensor_pub4 = n.advertise<sensor_msgs::Range>("sensor_range4", 10);
   ros::Publisher sensor_pub5 = n.advertise<sensor_msgs::Range>("sensor_range5", 10);
-  ros::Rate r(0.5);
+  ros::Rate r(2);
   
   sensor_msgs::Range range_msg1;
   sensor_msgs::Range range_msg2;
