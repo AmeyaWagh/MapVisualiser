@@ -71,6 +71,7 @@ class RobotOdometry():
         self.prevLtick = 0
         self.prevRtick = 0
         self.sensordist = sensordist
+        self.dt = 1 
 
         self.x = 0
         self.y = 0
@@ -86,29 +87,40 @@ class RobotOdometry():
         #                2, -1*mapSize[0]/2, mapSize[0]/2])
 
     def getODOM(self, lm, rm, sensorData=[0, 0, 0, 0, 0]):
-        self.deltaL = lm-self.prevLtick
-        self.deltaR = rm-self.prevRtick
+        
+        # calculate the rotation of the wheel in terms of ticks
+        deltaL = lm-self.prevLtick
+        deltaR = rm-self.prevRtick
 
-        self.dt = 1
-        self.omega_left = (self.deltaL * self.distPerCount) / self.dt
-        self.omega_right = (self.deltaR * self.distPerCount) / self.dt
+        # calculate the velocity of each wheel
+        omega_left = (deltaL * self.distPerCount) / self.dt
+        omega_right = (deltaR * self.distPerCount) / self.dt
 
-        self.v_left = self.omega_left
-        self.v_right = self.omega_right
+        v_left = omega_left
+        v_right = omega_right
 
-        self.vx = ((self.v_right + self.v_left) / 2)
-        self.vy = 0
-        self.vth = ((self.v_right - self.v_left)/self.lengthBetweenTwoWheels)
+        # calculate the velocity along heading
+        vx = ((v_right + v_left) / 2)
 
-        self.delta_x = (self.vx * math.cos(self.th)) * self.dt
-        self.delta_y = (self.vx * math.sin(self.th)) * self.dt
-        self.delta_th = self.vth * self.dt
+        # calculate the velocity perpendicular to heading
+        # along wheel axle
+        vy = 0
 
-        self.x += self.delta_x
-        self.y += self.delta_y
-        self.th += self.delta_th
+        # calculate the heading in radians
+        vth = ((v_right - v_left)/self.lengthBetweenTwoWheels)
+
+        # calculate the change in x position and y position
+        delta_x = (vx * math.cos(self.th)) * self.dt
+        delta_y = (vx * math.sin(self.th)) * self.dt
+        delta_th = vth * self.dt
+
+        # update position of Robot (centroid)
+        self.x += delta_x
+        self.y += delta_y
+        self.th += delta_th
 
         # update sensor with readings
+        # measurement = (distance of sensor from centroid)+(sensor reading)
         sensorData = map(lambda x, y: x+y, self.sensordist, sensorData)
 
         # sensor reading is a tuple of (x,y)
@@ -127,39 +139,44 @@ class RobotOdometry():
             plt.plot(reading[0], reading[1], self.markers[idx])
 
         plt.draw()
-        # plt.pause(0.01)
+        plt.pause(0.01)
 
 if __name__ == '__main__':
     try:
         robot = RobotOdometry()
-        # while True:
-        #     lm = input("left motor ticks >> ")
-        #     rm = input("Right motor ticks >> ")
-        #     robot.getODOM(lm,rm)
-        #     robot.printPos()
-        #     print(lm,rm)
+        while True:
+            lm = input("left motor ticks >> ")
+            rm = input("Right motor ticks >> ")
+            robot.getODOM(lm,rm, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
+                
+            robot.printPos()
+            print(lm,rm)
         # for j in range(2):
-        for i in range(714):
-            lm = 1
-            rm = 1
-            robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
-                                              random.uniform(0, 1),
-                                              random.uniform(0, 1),
-                                              random.uniform(0, 1),
-                                              random.uniform(0, 1)])
-            robot.printPos()
-            # print(lm,rm)
-        # robot.plt.show()
-        for i in range(714):
-            lm = 0
-            rm = 1
-            # robot.getODOM(lm,rm)
-            robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
-                                              random.uniform(0, 1),
-                                              random.uniform(0, 1),
-                                              random.uniform(0, 1),
-                                              random.uniform(0, 1)])
-            robot.printPos()
+        # for i in range(71):
+        #     lm = 5
+        #     rm = 5
+        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1)])
+        #     robot.printPos()
+        #     # print(lm,rm)
+        # # robot.plt.show()
+        # for i in range(71):
+        #     lm = 0
+        #     rm = 10
+        #     # robot.getODOM(lm,rm)
+        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1)])
+        #     robot.printPos()
             # print(lm,rm)
         # for i in range(714):
         #     lm = 1
@@ -182,7 +199,7 @@ if __name__ == '__main__':
         #                                       random.uniform(0, 1)])
         #     robot.printPos()
             # print(lm,rm)
-        robot.plt.show()
+        # robot.plt.show()
         # for i in range(714):
         #     lm=0
         #     rm=-1
