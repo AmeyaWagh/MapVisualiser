@@ -7,8 +7,8 @@ import random
 
 class Sensor():
     '''
-        Models the behaviour of the sensor and calculates the x,y 
-        co-ordinates of the obstacle w.r.t the centroid of the 
+        Models the behaviour of the sensor and calculates the x,y
+        co-ordinates of the obstacle w.r.t the centroid of the
         robot it is attached to.
     '''
 
@@ -30,7 +30,7 @@ class Sensor():
             math.sin(self.angleFromHeading)+origin[1]
 
     def getReading(self, val, x, y, theta):
-        # returns the (x,y) co-ordinates of the point which the sensor 
+        # returns the (x,y) co-ordinates of the point which the sensor
         # detected w.r.t (x,y,theta) frame provided
 
         if (val >= self.minVal) and (val < self.maxVal):
@@ -53,16 +53,49 @@ class RobotOdometry():
                  lengthBetweenTwoWheels=10,
                  encoderResolution=720,
                  mapSize=(1000, 1000),
-                 # distances of each sensor from the centroid of the robot
-                 # sensor distance in order front, Left, Right, Left_45, Right_45 in cm
-                 sensordist=[1, 1, 1, 1, 1],
-                 # angular offset of each sensor from the heading 
-                 sensorAngle=[0,                    # front sensor
-                              math.pi/2,            # Left sensor
-                              -1*math.pi/2,         # Right sensor
-                              math.pi/4,            # Left_45 sensor 
-                              -1*math.pi/4]):       # Right_45 sensor
-
+                # sensor Parameters
+                sensorParams = [
+                                  {
+                                    "id": "frontSensor",
+                                    "sensordist": 1,
+                                    "sensorAngle": 0,
+                                    "minVal": 0.3,
+                                    "maxVal": 40,
+                                    "marker":'g.'
+                                  },
+                                  {
+                                    "id": "LeftSensor",
+                                    "sensordist": 1,
+                                    "sensorAngle": math.pi/2,
+                                    "minVal": 0.3,
+                                    "maxVal": 40,
+                                    "marker":'b.'
+                                  },
+                                  {
+                                    "id": "RightSensor",
+                                    "sensordist": 1,
+                                    "sensorAngle": -1*math.pi/2,
+                                    "minVal": 0.3,
+                                    "maxVal": 40,
+                                    "marker":'b.'
+                                  },
+                                  {
+                                    "id": "Left45Sensor",
+                                    "sensordist": 1,
+                                    "sensorAngle": math.pi/4,
+                                    "minVal": 0.3,
+                                    "maxVal": 40,
+                                    "marker":'y.'
+                                  },
+                                  {
+                                    "id": "Right45Sensor",
+                                    "sensordist": 1,
+                                    "sensorAngle": -1*math.pi/4,
+                                    "minVal": 0.3,
+                                    "maxVal": 40,
+                                    "marker":'y.'
+                                  }
+                                ]):
         self.lengthBetweenTwoWheels = lengthBetweenTwoWheels  # cm
         self.radius = radius  # cm
         self.encoderResolution = encoderResolution
@@ -70,16 +103,16 @@ class RobotOdometry():
             self.encoderResolution  # cm
         self.prevLtick = 0
         self.prevRtick = 0
-        self.sensordist = sensordist
+        self.sensorParams = sensorParams
+        self.sensordist = [param["sensordist"] for param in self.sensorParams]
         self.dt = 1 
 
         self.x = 0
         self.y = 0
         self.th = 0
 
-        # sensor instances in order front, Left, Right, Left_45, Right_45
-        self.sensors = [Sensor(sensordist[i], sensorAngle[i], 0.3, 40.0, [
-                               0, 0]) for i in range(len(sensordist))]
+        self.sensors = [Sensor(param["sensordist"], param["sensorAngle"], param['minVal'], param['maxVal'], [
+                               0, 0]) for param in sensorParams]
 
         self.plt = plt
         self.plt.show(block=True)
@@ -135,11 +168,10 @@ class RobotOdometry():
 
     def printPos(self):
         # print("I am at ({},{}) facing {}".format(self.x,self.y,(self.th*180/math.pi)))
-        self.markers = ['g.', 'b.', 'b.', 'y.', 'y.']
         plt.plot(self.x, self.y, 'r.')
 
         for idx, reading in enumerate(self.sensor_readings):
-            plt.plot(reading[0], reading[1], self.markers[idx])
+            plt.plot(reading[0], reading[1], self.sensorParams[idx]['marker'])
 
         plt.draw()
         plt.pause(0.01)
