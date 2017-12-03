@@ -40,7 +40,7 @@ class Sensor():
                 math.sin(theta+self.angleFromHeading)+y
             return (self.sensor_x, self.sensor_y)
         else:
-            return (None, None)
+            return (0, 0)
 
 
 class RobotOdometry():
@@ -91,6 +91,9 @@ class RobotOdometry():
         # calculate the rotation of the wheel in terms of ticks
         deltaL = lm-self.prevLtick
         deltaR = rm-self.prevRtick
+
+        self.prevLtick = lm
+        self.prevRtick = rm
 
         # calculate the velocity of each wheel
         omega_left = (deltaL * self.distPerCount) / self.dt
@@ -144,69 +147,96 @@ class RobotOdometry():
 if __name__ == '__main__':
     try:
         robot = RobotOdometry()
-        while True:
-            lm = input("left motor ticks >> ")
-            rm = input("Right motor ticks >> ")
-            robot.getODOM(lm,rm, sensorData=[random.uniform(0, 1),
+
+        # Testing user input
+        # while True:
+        #     lm = input("left motor ticks >> ")
+        #     rm = input("Right motor ticks >> ")
+        #     robot.getODOM(lm,rm, sensorData=[random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1),
+        #                                       random.uniform(0, 1)])
+                
+        #     robot.printPos()
+        #     print("I am at ({},{}) facing {} degree from x-axis".format(robot.x,robot.y,(robot.th*180/math.pi)))
+            # print(lm,rm)
+
+        
+        # testing a track
+        lm=0;lr=0
+        # go straight
+        for i in range(0,71,5):
+            lm=i
+            lr=i
+            robot.getODOM(lm, lr, sensorData=[random.uniform(0, 1),
                                               random.uniform(0, 1),
                                               random.uniform(0, 1),
                                               random.uniform(0, 1),
                                               random.uniform(0, 1)])
-                
             robot.printPos()
-            print(lm,rm)
-        # for j in range(2):
-        # for i in range(71):
-        #     lm = 5
-        #     rm = 5
-        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1)])
-        #     robot.printPos()
-        #     # print(lm,rm)
-        # # robot.plt.show()
-        # for i in range(71):
-        #     lm = 0
-        #     rm = 10
-        #     # robot.getODOM(lm,rm)
-        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1)])
-        #     robot.printPos()
-            # print(lm,rm)
-        # for i in range(714):
-        #     lm = 1
-        #     rm = 1
-        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1)])
-        #     robot.printPos()
-        #     # print(lm,rm)
-        # for i in range(714):
-        #     lm = 1
-        #     rm = 0
-        #     # robot.getODOM(lm,rm)
-        #     robot.getODOM(lm, rm, sensorData=[random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1),
-        #                                       random.uniform(0, 1)])
-        #     robot.printPos()
-            # print(lm,rm)
-        # robot.plt.show()
-        # for i in range(714):
-        #     lm=0
-        #     rm=-1
-        #     robot.getODOM(lm,rm)
-        #     robot.printPos()
-        #     print(lm,rm)
-        # robot.plt.show()
+
+        # turn left
+        _lr = lr
+        for i in range(0,714,20):
+            # lm=0
+            lr=i+_lr
+            robot.getODOM(lm, lr, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
+            robot.printPos()    
+
+        # go straight
+        _lr=lr
+        _lm=lm
+        for i in range(0,71,5):
+            lm=i+_lm
+            lr=i+_lr
+            robot.getODOM(lm, lr, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
+            robot.printPos()
+
+        # turn right
+        _lm=lm
+        for i in range(0,714,20):
+            # lm+=0
+            lm=i+_lm
+            robot.getODOM(lm, lr, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
+            robot.printPos()        
+ 
+        # go straight
+        _lr=lr
+        _lm=lm
+        for i in range(0,71,5):
+            lm=i+_lm
+            lr=i+_lr
+            robot.getODOM(lm, lr, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
+        
+        # turn right
+        _lm=lm
+        for i in range(0,714,20):
+            lm=i+_lm
+            # lr=i
+            robot.getODOM(lm, lr, sensorData=[random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1),
+                                              random.uniform(0, 1)])
+            robot.printPos()  
+    
     except Exception as e:
         traceback.print_exc()
         quit()
