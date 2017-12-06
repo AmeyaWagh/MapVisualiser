@@ -13,7 +13,8 @@ $V_{r}$ = $\frac{\text{$\Delta_{r}$ x Distance per tick}}{dt}$\\\\
 $V_{x_{cm}}$ = $\frac{\text{$V_{l}$ + $V_{l}$}}{2}$\\\\
 Assuming that the robot does not slip along a direction perpendicular to the direction of motion\\
 $V_{y_{cm}}$ = 0\\\\
-By fixing one wheel at rest at a time and making the robot rotate centered at each wheel we get the rotational velocity of the robot as\\\\
+By fixing one wheel at rest at a time and making the robot rotate centered at each wheel we get the
+rotational velocity of the robot as\\\\
 $\omega$ = $\frac{\text{$V_{r}$-$V_{r}$}}{l}$, where l is the distance between two wheels\\\\
 $\Delta_{x}$ = $V_{x_{cm}}$cos$(\theta)$dt  \\\\
 $\Delta_{y}$ = $V_{x_{cm}}$sin$(\theta)$dt \\\\
