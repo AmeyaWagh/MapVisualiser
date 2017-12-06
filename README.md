@@ -1,25 +1,2 @@
-\documentclass{article}
-\usepackage[utf8]{inputenc}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\begin{document}
-\textbf{Odometry model}\\\\
-$\Delta_{l}$ = $Ticks_{l}$ - $Previousticks_{l}$\\\\
-$\Delta_{r}$ = $Ticks_{r}$ - $Previousticks_{r}$\\\\
-The wheels rotate at 720 ticks per revolution\\\\
-Distance per tick = $\frac{\text{2$\pi$r}}{720}$\\\\
-$V_{l}$ = $\frac{\text{$\Delta_{l}$ x Distance per tick}}{dt}$\\\\
-$V_{r}$ = $\frac{\text{$\Delta_{r}$ x Distance per tick}}{dt}$\\\\
-$V_{x_{cm}}$ = $\frac{\text{$V_{l}$ + $V_{l}$}}{2}$\\\\
-Assuming that the robot does not slip along a direction perpendicular to the direction of motion\\
-$V_{y_{cm}}$ = 0\\\\
-By fixing one wheel at rest at a time and making the robot rotate centered at each wheel we get the
-rotational velocity of the robot as\\\\
-$\omega$ = $\frac{\text{$V_{r}$-$V_{r}$}}{l}$, where l is the distance between two wheels\\\\
-$\Delta_{x}$ = $V_{x_{cm}}$cos$(\theta)$dt  \\\\
-$\Delta_{y}$ = $V_{x_{cm}}$sin$(\theta)$dt \\\\
-$\Delta_{\theta}$ = $\omega$dt\\\\
-$x_{t}$ = $x_{t-1}$ + $\Delta_{x}$\\\\
-$y_{t}$ = $y_{t-1}$ + $\Delta_{y}$\\\\
-$\theta_{t}$ = $\theta_{t-1}$ + $\Delta_{\theta}$\\\\
-\end{document}
+#Map Visualiser
+The code provides the location of the robot based on the odometry.The math involved and the corresponding equations are in the Equations.tex file. It is in latex format and can be easily used in the final report that we have to make.
