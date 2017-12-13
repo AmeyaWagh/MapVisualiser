@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 
 import json
+import math
 import os
+os.sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages/")
+os.sys.path.append("/home/aleks/space/.pyenv/versions/2.7.14/lib/python2.7/site-packages")
+import signal
+import sys
 import traceback
 
+import rospy
 import zmq
+from std_msgs.msg import String
 from tornado import web, websocket
 from zmq.eventloop import ioloop, zmqstream
 
@@ -13,11 +20,7 @@ from odometry import RobotOdometry
 
 ioloop.install()
 
-this_directory = os.path.dirname(__file__)
-
-WEB_PATH = os.path.join(this_directory, "static")
-
-
+WEB_PATH = os.path.join(os.path.dirname(__file__), "static")
 ROBOT_ADDRESS = "tcp://black-pearl:7654"
 
 
@@ -31,6 +34,34 @@ class NoCacheStaticFileHandler(web.StaticFileHandler):
         '''
         self.set_header('Cache-Control',
                         'no-store, no-cache, must-revalidate, max-age=0')
+
+
+class IMUServer(websocket.WebSocketHandler):
+    '''
+    This websocket will be proxying the IMU data to the web client.
+    '''
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("IMUServer web socket connection created")
+
+    def _handle_imu_data(self, imu_data):
+        self.write_message(imu_data.data)
+
+    def open(self):
+        print("IMU Rospy connection opened")
+        rospy.init_node("imu_data", anonymous=True)
+        rospy.Subscriber("imu_data", String, self._handle_imu_data)
+
+    def on_message(self, msg):
+        print(f"Unexpected messge from client: {msg}")
+
+    def on_close(self):
+        print("ROSPY connection has been closed, so sad.")
+        try:
+            rospy.signal_shutdown("IMUData connection closed down")
+        except Exception:
+            print("Failed to ROSPY connection: {}".format("imu_data"))
+            traceback.print_exc()
 
 
 class SensorServer(websocket.WebSocketHandler):
@@ -50,15 +81,15 @@ class SensorServer(websocket.WebSocketHandler):
     def _handle_sensor_data(self, msg_array):
         msg = json.loads(msg_array[0])
         odometry = msg["odometry"]
-        if 0 in (odometry["left"], odometry["right"]):
-            print(f"Bad data, skipping: {odometry}")
+        left, right = odometry["left"], odometry["right"]
+
+        if left == 0 or right == 0:
+            print(f"Still getting bad readings, skipping: {odometry}")
             return
 
         ultrasonic = msg["ultrasonic"]
-        predictions = self._rob_odom.getODOM(odometry["left"], odometry["right"], ultrasonic)
+        predictions = self._rob_odom.getODOM(left, right, ultrasonic)
         self.write_message(json.dumps(predictions))
-        print(odometry)
-        print(ultrasonic)
 
     def open(self):
         print("Connection on server has been openend")
@@ -95,6 +126,7 @@ def make_app(loop):
     }
     return web.Application([
         (r"/ws/sensors", SensorServer, {"loop": loop}),
+        (r"/ws/imu_data", IMUServer),
         (r"/(.*)", NoCacheStaticFileHandler, {"path": WEB_PATH, "default_filename": "index.html"}),
         ],
         **settings)
@@ -104,6 +136,12 @@ def main():
     loop = ioloop.IOLoop.instance()
     try:
         app = make_app(loop)
+        def shutdown_ros(*args):
+            print("Shutting down rospy")
+            rospy.signal_shutdown("Closing ROSPY")
+            sys.exit()
+
+        signal.signal(signal.SIGINT, shutdown_ros)
         app.listen(8888)
         loop.start()
     except (SystemExit, KeyboardInterrupt):
