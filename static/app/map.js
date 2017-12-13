@@ -82,6 +82,7 @@ define(['./utils', './consts'], function(utils, consts)
 
             var cellx = Math.floor(x_pos / this.cell_size);
             var celly = Math.floor(y_pos / this.cell_size);
+            console.log("Updating cell: (" + cellx + ", " + celly + ")");
             return this.cells[cellx][celly];
         }
 

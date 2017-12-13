@@ -104,13 +104,17 @@ class RobotOdometry(object):
 
         self.x = 500
         self.y = 500
-        self.th = 0
+        self.heading = 0
 
-        self.sensors = [Sensor(param["sensordist"], param["sensorAngle"], param['minVal'], param['maxVal'], [
-                               0, 0]) for param in sensor_params]
+        self.sensors = [Sensor(param["sensordist"],
+                               param["sensorAngle"],
+                               param['minVal'],
+                               param['maxVal'],
+                               [0, 0])
+                               for param in sensor_params]
 
 
-    def getODOM(self, left_ticks, right_ticks, sensorData):
+    def getODOM(self, left_ticks, right_ticks, sensor_data):
         if self.prev_right_tick == 0 and self.prev_left_tick == 0:
             self.prev_left_tick, self.prev_right_tick = left_ticks, right_ticks
             return
@@ -137,20 +141,20 @@ class RobotOdometry(object):
         vth = ((v_left - v_right ) / self.length_between_wheels)
 
         # calculate the change in x position and y position
-        delta_x = (vx * math.cos(self.th)) * dt
-        delta_y = (vx * math.sin(self.th)) * dt
+        delta_x = (vx * math.cos(self.heading)) * dt
+        delta_y = (vx * math.sin(self.heading)) * dt
         delta_th = vth * dt
 
         # update position of Robot (centroid)
         self.x += delta_x
         self.y += delta_y
-        self.th += delta_th
+        self.heading += delta_th
 
         # update sensor with readings
         # measurement = (distance of sensor from centroid)+(sensor reading)
-        sensorData = list(map(lambda x, y: x+y, self.sensordist, sensorData))
+        sensor_data = list(map(lambda x, y: x+y, self.sensordist, sensor_data))
 
         # sensor reading is a tuple of (x,y)
-        sensor_readings = [sensor.get_reading(sensorData[idx], self.x, self.y, self.th) for idx, sensor in enumerate(self.sensors)]
+        sensor_readings = [sensor.get_reading(sensor_data[idx], self.x, self.y, self.heading) for idx, sensor in enumerate(self.sensors)]
 
-        return {"frame": (self.x, self.y, self.th),"sensorValues": sensor_readings}
+        return {"frame": (self.x, self.y, self.heading),"sensorValues": sensor_readings}

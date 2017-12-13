@@ -1,37 +1,12 @@
 'use strict';
 define(['underscore', './utils', './consts.js'], function(_, utils, consts)
 {
-    function draw_bot_map(ctx, map)
-    {
-        for(var x = 0; x < map.num_cells_x; ++x)
-        {
-            for(var y = 0; y < map.num_cells_y; ++y)
-            {
-                var cell = map.cells[x][y];
-                if(cell.ticks > 0)
-                {
-                    var ticks = cell.ticks;
-                    var shading = utils.clamp(ticks, 0, 255);
-                    var color = 'rgb(255' + ',' + (255 - shading) + ',' + (255 - shading) + ')';
-                    ctx.fillStyle = color;
-                    ctx.fillRect(cell.x, cell.y, cell.width, cell.height);
-                }
-            }
-        }
-    }
-
     class Renderer
     {
         constructor(canvas)
         {
             this.canvas = canvas;
             this.ctx = this.canvas.getContext('2d');
-            this.best_networks = [];
-            this.best_nn_image_1 = new Image();
-            this.best_nn_image_2 = new Image();
-            this.best_nn_image_3 = new Image();
-            this.best_nn_image_4 = new Image();
-            this.selected_network = new Image();
         }
 
         init_graphics()
@@ -86,6 +61,63 @@ define(['underscore', './utils', './consts.js'], function(_, utils, consts)
                 this.ctx.lineTo(sensor[0], sensor[1]);
                 this.ctx.stroke();
                 utils.draw_circle(this.ctx, sensor[0], sensor[1], radius);
+            }
+        }
+
+        draw_bot_map(map)
+        {
+            for(var x = 0; x < map.num_cells_x; ++x)
+            {
+                for(var y = 0; y < map.num_cells_y; ++y)
+                {
+                    var cell = map.cells[x][y];
+                    if(cell.ticks > 0)
+                    {
+                        var ticks = cell.ticks;
+                        var shading = utils.clamp(ticks, 0, 255);
+                        var color = 'rgb(255' + ',' + (255 - shading) + ',' + (255 - shading) + ')';
+                        this.ctx.fillStyle = color;
+                        this.ctx.fillRect(cell.x, cell.y, cell.width, cell.height);
+                    }
+                }
+            }
+        }
+
+
+        draw_info_menu(imu_data)
+        {
+            this.ctx.strokeStyle = 'black';
+            this.ctx.lineWidth = 1;
+            this.ctx.beginPath();
+            var menu_points = [
+                                [1500, 45],
+                                [1880, 45],
+                                [1880, 375],
+                                [1500, 375],
+                                [1500, 45]
+                              ];
+            this._draw_lines(menu_points);
+            var x = 1505;
+            var y = 65;
+            this.ctx.font = "18px Arial";
+            var line_step = 30;
+
+            _.each(imu_data, function(value, key, obj){
+                this.ctx.fillText(key + ": " + value, x, y);
+                y += line_step;
+            }.bind(this));
+        }
+
+        _draw_lines(points)
+        {
+            var start = points[0];
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(start[0], start[1]);
+            for(let point of _.rest(points))
+            {
+                this.ctx.lineTo(point[0], point[1]);
+                this.ctx.stroke();
             }
         }
 
